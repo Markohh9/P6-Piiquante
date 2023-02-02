@@ -119,3 +119,59 @@ exports.getAllSauces = (req, res, next) => {
             error
         }));
 };
+
+exports.likeDislikeSauce = (req, res, next) => {
+    const {
+        like,
+        dislike
+    } = req.body;
+    const userId = req.auth.userId;
+    const sauceId = req.params.id;
+    let likeValue;
+    if (like !== undefined) {
+        likeValue = like;
+    } else if (dislike !== undefined) {
+        likeValue = -dislike;
+    }
+    Sauce.findOne({
+            _id: sauceId
+        })
+        .then(sauce => {
+            switch (likeValue) {
+                case 1:
+                    if (sauce.usersLiked.find(user => user === userId)) {
+                        return res.status(400).json({
+                            error: 'Vous avez déjà aimé cette sauce'
+                        });
+                    }
+                    sauce.usersLiked.push(userId);
+                    break;
+                case -1:
+                    if (sauce.usersDisliked.find(user => user === userId)) {
+                        return res.status(400).json({
+                            error: 'Vous avez déjà désapprouvé cette sauce'
+                        });
+                    }
+                    sauce.usersDisliked.push(userId);
+                    break;
+                case 0:
+                    sauce.usersLiked = sauce.usersLiked.filter(user => user !== userId);
+                    sauce.usersDisliked = sauce.usersDisliked.filter(user => user !== userId);
+                    break;
+                default:
+                    return res.status(400).json({
+                        error: 'Valeur de "like" ou "dislike" non valide'
+                    });
+            }
+            sauce.save()
+                .then(() => res.status(200).json({
+                    message: 'Le like ou dislike a bien été enregistré !'
+                }))
+                .catch(error => res.status(400).json({
+                    error
+                }));
+        })
+        .catch(error => res.status(500).json({
+            error
+        }));
+};

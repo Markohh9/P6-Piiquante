@@ -1,22 +1,27 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
 const path = require('path');
-const dotenv = require('dotenv');
-dotenv.config();
+
 
 
 const sauceRoutes = require('./routes/sauce');
 const userRoutes = require('./routes/user');
+const cp = require('fs');
 
-mongoose.connect('mongodb+srv://Marco:openclassroom09@cluster0.57yfaqa.mongodb.net/?retryWrites=true&w=majority', 
-{useNewUrlParser: true,
-useUnifiedTopology: true
-})
-.then(() => console.log('Connexion à MongoDB réussie !'))
-.catch(() => console.log('Connexion à MongoDB échouée !'));
+const myUsernameDb = process.env.DB_USERNAME
+const myPasswordDb = process.env.DB_PASSWORD
+const uri = `mongodb+srv://${myUsernameDb}:${myPasswordDb}@cluster0.57yfaqa.mongodb.net/?retryWrites=true&w=majority`
+
+mongoose.connect(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
+    .then(() => console.log('Connexion à MongoDB réussie !'))
+    .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(cors());
 
