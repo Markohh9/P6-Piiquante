@@ -121,10 +121,7 @@ exports.getAllSauces = (req, res, next) => {
 };
 
 exports.likeDislikeSauce = (req, res, next) => {
-    const {
-        like,
-        dislike
-    } = req.body;
+    const { like, dislike } = req.body;
     const userId = req.auth.userId;
     const sauceId = req.params.id;
     let likeValue;
@@ -133,30 +130,37 @@ exports.likeDislikeSauce = (req, res, next) => {
     } else if (dislike !== undefined) {
         likeValue = -dislike;
     }
-    Sauce.findOne({
-            _id: sauceId
-        })
+
+    Sauce.findOne({ _id: sauceId })
         .then(sauce => {
             switch (likeValue) {
                 case 1:
+                    if (sauce.userId !== userId){ 
                     if (sauce.usersLiked.find(user => user === userId)) {
                         return res.status(400).json({
                             error: 'Vous avez déjà aimé cette sauce'
                         });
                     }
-                    sauce.usersLiked.push(userId);
+                    sauce.likes += 1;
+                    sauce.usersLiked.push(userId);}
                     break;
+                    
                 case -1:
+                    if (sauce.userId !== userId){ 
                     if (sauce.usersDisliked.find(user => user === userId)) {
                         return res.status(400).json({
                             error: 'Vous avez déjà désapprouvé cette sauce'
                         });
                     }
-                    sauce.usersDisliked.push(userId);
+                    sauce.dislikes += 1;
+                    sauce.usersDisliked.push(userId);}
                     break;
                 case 0:
+                    if (sauce.userId !== userId){ 
+                    sauce.likes -= sauce.usersLiked.includes(userId) ? 1 : 0;
+                    sauce.dislikes -= sauce.usersDisliked.includes(userId) ? 1 : 0;
                     sauce.usersLiked = sauce.usersLiked.filter(user => user !== userId);
-                    sauce.usersDisliked = sauce.usersDisliked.filter(user => user !== userId);
+                    sauce.usersDisliked = sauce.usersDisliked.filter(user => user !== userId);}
                     break;
                 default:
                     return res.status(400).json({

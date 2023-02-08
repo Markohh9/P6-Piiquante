@@ -1,9 +1,13 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv').config()
 const User = require('../models/user');
 
 exports.signup = (req, res, next) => {
+    if (req.body.password.length < 8){
+        return res.status(400).json({
+            error: "mot de passe trop court !"
+        });
+    }
     bcrypt.hash(req.body.password, 10)
         .then(hash => {
             const user = new User({

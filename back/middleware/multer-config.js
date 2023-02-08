@@ -18,5 +18,10 @@ const storage = multer.diskStorage({
 });
 
 module.exports = multer({
-    storage: storage
+    storage: storage,
+    fileFilter: (req, file, callback) => {
+        const isValid = !!MIME_TYPES[file.mimetype];
+        let error = isValid ? null : new Error('Mimetype non valide');
+        callback(error, isValid);
+    }
 }).single('image');
